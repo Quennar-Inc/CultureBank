@@ -7,6 +7,7 @@ from typing import Dict, List, Optional, Union
 import json
 from pathlib import Path
 import yaml
+import os
 
 class PipelineVisualizer:
     def __init__(self, config_path: str, output_dir: str = "visualization_outputs"):
@@ -261,11 +262,14 @@ class PipelineVisualizer:
             self.save_plot(fig, name)
 
 if __name__ == "__main__":
-    # Use the vanilla config file path
-    config_path = "CultureBank/data_process_pipeline/configs/config_dummy_data_vanilla_mistral.yaml"
-    output_dir = "CultureBank/data_process_pipeline/results/visualizations"
+    # Adjust paths to be relative to the current directory
+    config_path = "../configs/config_dummy_data_vanilla_mistral.yaml"
+    output_dir = "../results/visualizations"
     
     # Initialize visualizer
+    print(f"Using config file: {os.path.abspath(config_path)}")
+    print(f"Output directory: {os.path.abspath(output_dir)}")
+    
     visualizer = PipelineVisualizer(
         config_path=config_path,
         output_dir=output_dir
@@ -275,6 +279,6 @@ if __name__ == "__main__":
     print("Generating visualizations...")
     try:
         visualizer.generate_all_visualizations()
-        print(f"Visualizations saved in: {output_dir}")
+        print(f"Visualizations saved in: {os.path.abspath(output_dir)}")
     except Exception as e:
         print(f"Error generating visualizations: {str(e)}")
