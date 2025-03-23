@@ -25,6 +25,10 @@ from pipeline.pipeline_component import PipelineComponent
 
 logger = logging.getLogger(__name__)
 
+def get_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    return "cpu"
 
 class ClusterSummarizer(PipelineComponent):
     description = "summarize clustered cultural indicators"
@@ -36,6 +40,8 @@ class ClusterSummarizer(PipelineComponent):
         # get local config
         self._local_config = config[self.config_layer]
         self.sanity_check = self._local_config["sanity_check"]
+        self.device = get_device()
+        logger.info(f"Using device: {self.device}")
 
     def _load_model(self):
         model_name = self._local_config["model"]
@@ -50,23 +56,23 @@ class ClusterSummarizer(PipelineComponent):
                 # No need to merge
                 text_model = AutoModelForCausalLM.from_pretrained(
                     model_name,
-                    torch_dtype=torch.bfloat16,
-                    device_map={"": 0},
+                    torch_dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
+                    device_map={"": 0} if self.device == "cuda" else None,
                     quantization_config=BitsAndBytesConfig(
                         load_in_4bit=True,
                         bnb_4bit_quant_type="nf4",
                         bnb_4bit_compute_dtype=torch.bfloat16,
                         bnb_4bit_use_double_quant=False,
-                    ),
-                    attn_implementation="flash_attention_2",
+                    ) if self.device == "cuda" else None,
+                    attn_implementation="flash_attention_2" if self.device == "cuda" else None,
                 )
                 pass
             elif len(adapters) > 1:
                 # Need to merge
                 text_model = AutoModelForCausalLM.from_pretrained(
                     model_name,
-                    torch_dtype=torch.bfloat16,
-                    device_map="auto",
+                    torch_dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
+                    device_map="auto" if self.device == "cuda" else None,
                 )
             logger.info("----------------------------------------------------")
             logger.info(f"Loaded the model {model_name}")
@@ -89,15 +95,15 @@ class ClusterSummarizer(PipelineComponent):
         ):
             text_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                torch_dtype=torch.bfloat16,
-                device_map={"": 0},
+                torch_dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
+                device_map={"": 0} if self.device == "cuda" else None,
                 quantization_config=BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_quant_type="nf4",
                     bnb_4bit_compute_dtype=torch.bfloat16,
                     bnb_4bit_use_double_quant=False,
-                ),
-                attn_implementation="flash_attention_2",
+                ) if self.device == "cuda" else None,
+                attn_implementation="flash_attention_2" if self.device == "cuda" else None,
             )
         else:
             raise NotImplementedError
@@ -105,6 +111,9 @@ class ClusterSummarizer(PipelineComponent):
         tokenizer = AutoTokenizer.from_pretrained(
             "mistralai/Mixtral-8x7B-Instruct-v0.1"
         )
+
+        if self.device == "cpu":
+            text_model = text_model.to(self.device)
 
         self.text_model = text_model
         self.tokenizer = tokenizer
@@ -205,7 +214,7 @@ class ClusterSummarizer(PipelineComponent):
                 num_retries = 10
 
                 for _ in range(num_retries):
-                    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+                    inputs = tokenizer(prompt, return_tensors="pt").to(self.device)
                     outputs = text_model.generate(
                         **inputs,
                         max_new_tokens=1024,
