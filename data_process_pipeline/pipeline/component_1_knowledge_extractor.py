@@ -25,6 +25,7 @@ from utils.prompt_utils import (
     KNOWLEDGE_EXTRACTION_FIELDS,
 )
 from pipeline.pipeline_component import PipelineComponent
+from huggingface_hub import login
 
 logger = logging.getLogger(__name__)
 
@@ -41,38 +42,61 @@ class KnowledgeExtractor(PipelineComponent):
         self.sanity_check = self._local_config["sanity_check"]
 
     def _load_model(self):
+        
+        print("Please enter your Hugging Face token to access the model.")
+        print("You can find or create your token at: https://huggingface.co/settings/tokens")
+        print("Make sure you have accepted the terms for the model at: https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2")
+
+        # This will prompt the user for their token in the notebook/terminal
+        login()
+    
         model_name = self._local_config["model"]
         tokenizer_path = (
             self._local_config["tokenizer"]
             if "tokenizer" in self._local_config
             else model_name
         )
+        
+        # Check if CUDA is available
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Using device: {self.device}")
+        
+        def load_model_with_quantization():
+            try:
+                return AutoModelForCausalLM.from_pretrained(
+                    model_name,
+                    torch_dtype=torch.bfloat16 if self.device == "cuda" else torch.float32,
+                    device_map={"": 0} if self.device == "cuda" else None,
+                    quantization_config=BitsAndBytesConfig(
+                        load_in_4bit=True,
+                        bnb_4bit_quant_type="nf4",
+                        bnb_4bit_compute_dtype=torch.bfloat16,
+                        bnb_4bit_use_double_quant=False,
+                    ) if self.device == "cuda" else None,
+                    attn_implementation="flash_attention_2" if self.device == "cuda" else None,
+                )
+            except RuntimeError as e:
+                logger.warning(f"Failed to load model with quantization: {e}")
+                logger.info("Falling back to non-quantized model loading...")
+                return AutoModelForCausalLM.from_pretrained(
+                    model_name,
+                    torch_dtype=torch.float32,
+                    device_map="auto" if self.device == "cuda" else None,
+                )
+
         if self._local_config["pattern"] == "adapter":
             adapters = self._local_config["adapters"]
             assert len(adapters) >= 1
             text_tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
             if len(adapters) == 1:
                 # No need to merge
-                text_model = AutoModelForCausalLM.from_pretrained(
-                    model_name,
-                    torch_dtype=torch.bfloat16,
-                    # load_in_4bit=True,
-                    device_map={"": 0},
-                    quantization_config=BitsAndBytesConfig(
-                        load_in_4bit=True,
-                        bnb_4bit_quant_type="nf4",
-                        bnb_4bit_compute_dtype=torch.bfloat16,
-                        bnb_4bit_use_double_quant=False,
-                    ),
-                    attn_implementation="flash_attention_2",
-                )
-                pass
+                text_model = load_model_with_quantization()
             elif len(adapters) > 1:
                 # Need to merge
                 text_model = AutoModelForCausalLM.from_pretrained(
                     model_name,
-                    torch_dtype=torch.bfloat16,
-                    device_map="auto",
+                    torch_dtype=torch.float32,
+                    device_map="auto" if self.device == "cuda" else None,
                 )
             logger.info("----------------------------------------------------")
             logger.info(f"Loaded the model {model_name}")
@@ -92,18 +116,7 @@ class KnowledgeExtractor(PipelineComponent):
             self._local_config["pattern"] == "merged"
             or self._local_config["pattern"] == "plain"
         ):
-            text_model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                torch_dtype=torch.bfloat16,
-                device_map={"": 0},
-                quantization_config=BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_quant_type="nf4",
-                    bnb_4bit_compute_dtype=torch.bfloat16,
-                    bnb_4bit_use_double_quant=False,
-                ),
-                attn_implementation="flash_attention_2",
-            )
+            text_model = load_model_with_quantization()
         else:
             raise NotImplementedError
 
@@ -188,7 +201,7 @@ class KnowledgeExtractor(PipelineComponent):
                 output_text = None
                 for _ in range(num_retries):
                     try:
-                        inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+                        inputs = tokenizer(prompt, return_tensors="pt").to(self.device)
                         outputs = text_model.generate(
                             **inputs,
                             max_new_tokens=512,
