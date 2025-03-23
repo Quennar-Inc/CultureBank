@@ -259,3 +259,22 @@ class PipelineVisualizer:
         # Save all visualizations
         for name, fig in visualizations.items():
             self.save_plot(fig, name)
+
+if __name__ == "__main__":
+    # Use the vanilla config file path
+    config_path = "CultureBank/data_process_pipeline/configs/config_dummy_data_vanilla_mistral.yaml"
+    output_dir = "CultureBank/data_process_pipeline/results/visualizations"
+    
+    # Initialize visualizer
+    visualizer = PipelineVisualizer(
+        config_path=config_path,
+        output_dir=output_dir
+    )
+    
+    # Generate all visualizations
+    print("Generating visualizations...")
+    try:
+        visualizer.generate_all_visualizations()
+        print(f"Visualizations saved in: {output_dir}")
+    except Exception as e:
+        print(f"Error generating visualizations: {str(e)}")
