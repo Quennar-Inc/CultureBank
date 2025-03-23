@@ -100,7 +100,6 @@ pytest==7.4.0
 pytest-base-url==2.0.0
 pytest-playwright==0.4.2
 python-slugify==8.0.1
-pyyaml==6.0.1
 regex==2023.8.8
 requests==2.31.0
 requests-file==2.0.0
@@ -143,4 +142,9 @@ urllib3==2.0.4
 wasabi==1.1.2
 weasel==0.3.3
 xxhash==3.3.0
-yarl==1.9.2 
+yarl==1.9.2
+plotly>=5.18.0
+numpy>=1.24.0
+seaborn>=0.12.0
+kaleido>=0.2.1
+PyYAML>=6.0.1
