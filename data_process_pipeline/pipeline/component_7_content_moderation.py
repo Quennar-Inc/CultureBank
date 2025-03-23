@@ -7,7 +7,7 @@ import pandas as pd
 
 # from profanity_check import predict, predict_prob
 # from better_profanity import profanity
-from googleapiclient import discovery
+# from googleapiclient import discovery  # Commented out for now
 from utils.constants import CULTUREBANK_FIELDS
 from presidio_analyzer import AnalyzerEngine
 from transformers import pipeline
@@ -26,7 +26,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-PERSPECTIVE_API_KEY = os.getenv("PERSPECTIVE_API")
+# PERSPECTIVE_API_KEY = os.getenv("PERSPECTIVE_API")  # Commented out for now
 
 
 class ContentModeration(PipelineComponent):
@@ -49,13 +49,13 @@ class ContentModeration(PipelineComponent):
         ]
 
         # perspective api
-        self.client = discovery.build(
-            "commentanalyzer",
-            "v1alpha1",
-            developerKey=PERSPECTIVE_API_KEY,
-            discoveryServiceUrl="https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
-            static_discovery=False,
-        )
+        # self.client = discovery.build(  # Commented out for now
+        #     "commentanalyzer",
+        #     "v1alpha1",
+        #     developerKey=PERSPECTIVE_API_KEY,
+        #     discoveryServiceUrl="https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
+        #     static_discovery=False,
+        # )
         # our own controversial classifier
         self.classifier = self.load_classifier()
 
@@ -99,11 +99,11 @@ class ContentModeration(PipelineComponent):
     def run(self):
         df = self.read_input()
         # get perspective scores
-        df = self.get_perspective_scores(df)
+        # df = self.get_perspective_scores(df)  # Commented out for now
 
         # hard filter by perspective score, anything that belongs to [hard, 1]
-        ids_with_api_hard = self.filter_by_perspective_api(df, self.hard_api_threshold)
-        df = df[~df.cluster_id.isin(ids_with_api_hard)]
+        # ids_with_api_hard = self.filter_by_perspective_api(df, self.hard_api_threshold)  # Commented out for now
+        # df = df[~df.cluster_id.isin(ids_with_api_hard)]
         self.save_output(df, save_dir=self._local_config["output_file"])
 
         # now get the nuanced cases for manual annotation
@@ -116,9 +116,10 @@ class ContentModeration(PipelineComponent):
         # 3. keyword filtering
         ids_with_keywords = self.filter_by_keywords(df)
         # 4. above the perspective soft threshold, anything that belongs to [soft, hard)
-        ids_with_api = self.filter_by_perspective_api(df, self.soft_api_threshold)
+        # ids_with_api = self.filter_by_perspective_api(df, self.soft_api_threshold)  # Commented out for now
         final_ids = list(
-            set(ids_with_predicted + ids_with_keywords + ids_with_api + ids_with_pii)
+            # set(ids_with_predicted + ids_with_keywords + ids_with_api + ids_with_pii)
+            set(ids_with_predicted + ids_with_keywords + ids_with_pii)  # Removed ids_with_api from the set
         )
         controversial_df = df[df.cluster_id.isin(final_ids)]
         controversial_df = controversial_df.sample(frac=1, random_state=42)
@@ -139,51 +140,51 @@ class ContentModeration(PipelineComponent):
             save_dir=self._local_config["output_file_for_manual_annotation"],
         )
 
-    def get_perspective_scores(self, df):
-        attributes = [
-            "TOXICITY",
-            "PROFANITY",
-            "INSULT",
-            "IDENTITY_ATTACK",
-            "THREAT",
-            "SEVERE_TOXICITY",
-        ]  # everything perpective api has as of 2024/03
-        attributes_scores = {att: [] for att in attributes}
-        for i in tqdm(range(df.shape[0])):
-            sent = ", ".join(
-                f"{df.iloc[i][field]}"
-                for field in self.fields_to_check
-                if pd.notna(df.iloc[i][field])
-            )
-            analyze_request = {
-                "comment": {"text": sent},
-                "languages": ["en"],
-                "requestedAttributes": {
-                    "TOXICITY": {},
-                    "PROFANITY": {},
-                    "INSULT": {},
-                    "IDENTITY_ATTACK": {},
-                    "THREAT": {},
-                    "SEVERE_TOXICITY": {},
-                },
-                "doNotStore": True,
-            }
-            start_time = time.time()
-            response = self.client.comments().analyze(body=analyze_request).execute()
-            # response = json.dumps(response, indent=2)
-            for attribute in attributes:
-                score = response["attributeScores"][attribute]["summaryScore"]["value"]
-                if attribute in response["attributeScores"]:
-                    attributes_scores[attribute].append(score)
-                else:
-                    attributes_scores[attribute].append(None)
-            elapsed_time = time.time() - start_time
-            if elapsed_time < 1.2:
-                time.sleep(1.2 - elapsed_time)
-        for attribute in attributes:
-            df[attribute] = attributes_scores[attribute]
-
-        return df
+    # def get_perspective_scores(self, df):  # Commented out for now
+    #     attributes = [
+    #         "TOXICITY",
+    #         "PROFANITY",
+    #         "INSULT",
+    #         "IDENTITY_ATTACK",
+    #         "THREAT",
+    #         "SEVERE_TOXICITY",
+    #     ]  # everything perpective api has as of 2024/03
+    #     attributes_scores = {att: [] for att in attributes}
+    #     for i in tqdm(range(df.shape[0])):
+    #         sent = ", ".join(
+    #             f"{df.iloc[i][field]}"
+    #             for field in self.fields_to_check
+    #             if pd.notna(df.iloc[i][field])
+    #         )
+    #         analyze_request = {
+    #             "comment": {"text": sent},
+    #             "languages": ["en"],
+    #             "requestedAttributes": {
+    #                 "TOXICITY": {},
+    #                 "PROFANITY": {},
+    #                 "INSULT": {},
+    #                 "IDENTITY_ATTACK": {},
+    #                 "THREAT": {},
+    #                 "SEVERE_TOXICITY": {},
+    #             },
+    #             "doNotStore": True,
+    #         }
+    #         start_time = time.time()
+    #         response = self.client.comments().analyze(body=analyze_request).execute()
+    #         # response = json.dumps(response, indent=2)
+    #         for attribute in attributes:
+    #             score = response["attributeScores"][attribute]["summaryScore"]["value"]
+    #             if attribute in response["attributeScores"]:
+    #                 attributes_scores[attribute].append(score)
+    #             else:
+    #                 attributes_scores[attribute].append(None)
+    #         elapsed_time = time.time() - start_time
+    #         if elapsed_time < 1.2:
+    #             time.sleep(1.2 - elapsed_time)
+    #     for attribute in attributes:
+    #         df[attribute] = attributes_scores[attribute]
+    #
+    #     return df
 
     def filter_by_keywords(self, df):
         # get the ids identified by keywords
@@ -200,18 +201,18 @@ class ContentModeration(PipelineComponent):
         logger.info(f"this keywords {len(ids_with_keywords)}")
         return ids_with_keywords
 
-    def filter_by_perspective_api(self, df, threshold):
-        # get the ids identified by api
-        ids_with_api = df[
-            (df["TOXICITY"] >= threshold)
-            | (df["PROFANITY"] >= threshold)
-            | (df["INSULT"] >= threshold)
-            | (df["IDENTITY_ATTACK"] >= threshold)
-            | (df["THREAT"] >= threshold)
-            | (df["SEVERE_TOXICITY"] >= threshold)
-        ].cluster_id.tolist()
-        logger.info(f"this many api {len(ids_with_api)}")
-        return ids_with_api
+    # def filter_by_perspective_api(self, df, threshold):  # Commented out for now
+    #     # get the ids identified by api
+    #     ids_with_api = df[
+    #         (df["TOXICITY"] >= threshold)
+    #         | (df["PROFANITY"] >= threshold)
+    #         | (df["INSULT"] >= threshold)
+    #         | (df["IDENTITY_ATTACK"] >= threshold)
+    #         | (df["THREAT"] >= threshold)
+    #         | (df["SEVERE_TOXICITY"] >= threshold)
+    #     ].cluster_id.tolist()
+    #     logger.info(f"this many api {len(ids_with_api)}")
+    #     return ids_with_api
 
     def detect_pii(self, df):
         analyzer = AnalyzerEngine()
