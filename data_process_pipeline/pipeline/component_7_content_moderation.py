@@ -12,7 +12,7 @@ from utils.constants import CULTUREBANK_FIELDS
 from presidio_analyzer import AnalyzerEngine
 from transformers import pipeline
 import sys
-
+import torch
 
 from spacy import displacy
 from pathlib import Path
@@ -61,11 +61,26 @@ class ContentModeration(PipelineComponent):
 
     def load_classifier(self):
         # load_model
-        classifier = pipeline(
-            "text-classification",
-            model=self._local_config["model_dir"],
-            device=self._local_config["device"],
-        )
+        device = self._local_config["device"]
+        try:
+            # Check if GPU is available if device is set to cuda
+            if device == "cuda" and not torch.cuda.is_available():
+                logger.warning("CUDA device requested but not available, falling back to CPU")
+                device = "cpu"
+            
+            # Load with determined device
+            classifier = pipeline(
+                "text-classification",
+                model=self._local_config["model_dir"],
+                device=device,
+            )
+        except Exception as e:
+            logger.warning(f"Failed to load model on {device}, falling back to CPU. Error: {str(e)}")
+            classifier = pipeline(
+                "text-classification",
+                model=self._local_config["model_dir"],
+                device="cpu",
+            )
         return classifier
 
     def read_keyword_list(self):
