@@ -30,9 +30,33 @@ class PipelineVisualizer:
 
     def read_pipeline_output(self, stage_name: str) -> pd.DataFrame:
         """Read the output CSV file for a specific pipeline stage."""
-        stage_config = self.config[stage_name]
-        output_file = self.project_base / stage_config['output_file']
-        return pd.read_csv(output_file)
+        try:
+            stage_config = self.config[stage_name]
+            output_file = stage_config['output_file']
+            
+            # Try different path combinations
+            possible_paths = [
+                Path(output_file),  # Try direct path
+                Path(self.config['result_base_dir']) / stage_name / 'output.csv',  # Try constructing from result base
+                Path('..') / output_file,  # Try relative to pipeline directory
+                Path(self.config['project_base_dir']) / output_file  # Try from project base
+            ]
+            
+            for path in possible_paths:
+                if path.exists():
+                    print(f"Found file at: {path}")
+                    return pd.read_csv(path)
+            
+            # If we get here, no file was found
+            print("Attempted paths:")
+            for path in possible_paths:
+                print(f"- {path} (exists: {path.exists()})")
+            raise FileNotFoundError(f"Could not find output file for stage {stage_name}. Tried multiple path combinations.")
+            
+        except Exception as e:
+            print(f"Error reading output for stage {stage_name}: {str(e)}")
+            print(f"Config for stage: {self.config.get(stage_name, 'Stage not found in config')}")
+            raise
 
     def plot_culture_relevance_distribution(self) -> go.Figure:
         """Create a pie chart showing the distribution of culture-relevant vs non-relevant content."""
