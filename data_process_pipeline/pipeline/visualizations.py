@@ -19,9 +19,9 @@ class PipelineVisualizer:
         with open(config_path, 'r') as f:
             self.config = yaml.safe_load(f)
         
-        # Set base paths
-        self.project_base = Path(self.config['project_base_dir'])
-        self.result_base = Path(self.config['result_base_dir'])
+        # Set base paths - adjust to be relative to CultureBank root
+        self.project_base = Path('../../')  # Go up to CultureBank root
+        self.result_base = self.project_base / 'data_process_pipeline/results'
 
     def save_plot(self, fig, filename: str):
         """Save a plotly figure to HTML and PNG formats."""
@@ -32,26 +32,17 @@ class PipelineVisualizer:
         """Read the output CSV file for a specific pipeline stage."""
         try:
             stage_config = self.config[stage_name]
-            output_file = stage_config['output_file']
+            # Remove the 'data_process_pipeline/' prefix if it exists
+            output_file = stage_config['output_file'].replace('data_process_pipeline/', '')
             
-            # Try different path combinations
-            possible_paths = [
-                Path(output_file),  # Try direct path
-                Path(self.config['result_base_dir']) / stage_name / 'output.csv',  # Try constructing from result base
-                Path('..') / output_file,  # Try relative to pipeline directory
-                Path(self.config['project_base_dir']) / output_file  # Try from project base
-            ]
+            # Construct path relative to project base
+            file_path = self.project_base / 'data_process_pipeline' / output_file
             
-            for path in possible_paths:
-                if path.exists():
-                    print(f"Found file at: {path}")
-                    return pd.read_csv(path)
-            
-            # If we get here, no file was found
-            print("Attempted paths:")
-            for path in possible_paths:
-                print(f"- {path} (exists: {path.exists()})")
-            raise FileNotFoundError(f"Could not find output file for stage {stage_name}. Tried multiple path combinations.")
+            print(f"Attempting to read: {file_path}")
+            if file_path.exists():
+                return pd.read_csv(file_path)
+            else:
+                raise FileNotFoundError(f"File not found at: {file_path}")
             
         except Exception as e:
             print(f"Error reading output for stage {stage_name}: {str(e)}")
@@ -286,13 +277,13 @@ class PipelineVisualizer:
             self.save_plot(fig, name)
 
 if __name__ == "__main__":
-    # Adjust paths to be relative to the current directory
+    # Use paths relative to current directory (pipeline/)
     config_path = "../configs/config_dummy_data_vanilla_mistral.yaml"
     output_dir = "../results/visualizations"
     
-    # Initialize visualizer
-    print(f"Using config file: {os.path.abspath(config_path)}")
-    print(f"Output directory: {os.path.abspath(output_dir)}")
+    print("Starting visualization generation...")
+    print(f"Using config file: {config_path}")
+    print(f"Output directory: {output_dir}")
     
     visualizer = PipelineVisualizer(
         config_path=config_path,
@@ -303,6 +294,6 @@ if __name__ == "__main__":
     print("Generating visualizations...")
     try:
         visualizer.generate_all_visualizations()
-        print(f"Visualizations saved in: {os.path.abspath(output_dir)}")
+        print(f"Visualizations saved in: {output_dir}")
     except Exception as e:
         print(f"Error generating visualizations: {str(e)}")
