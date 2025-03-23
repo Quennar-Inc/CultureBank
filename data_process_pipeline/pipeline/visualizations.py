@@ -52,14 +52,30 @@ class PipelineVisualizer:
     def plot_culture_relevance_distribution(self) -> go.Figure:
         """Create a pie chart showing the distribution of culture-relevant vs non-relevant content."""
         df = self.read_pipeline_output('0_culture_relevance_classifier')
+        
+        # Print available columns to help debug
         print(f"Available columns in culture relevance output: {df.columns.tolist()}")
         
-        # Use pred_label for relevance
-        relevance_counts = df['pred_label'].value_counts()
+        # The column might be named differently, try to find the relevant column
+        relevance_column = None
+        possible_names = ['is_culture_relevant', 'culture_relevant', 'pred_label', 'prediction', 'label']
+        
+        for col in possible_names:
+            if col in df.columns:
+                relevance_column = col
+                break
+        
+        if relevance_column is None:
+            print("Could not find culture relevance column. Available columns:", df.columns)
+            raise ValueError("Could not find culture relevance column in the data")
+        
+        # Count the distribution of culture relevance
+        relevance_counts = df[relevance_column].value_counts()
         
         fig = px.pie(values=relevance_counts.values, 
                      names=relevance_counts.index,
-                     title='Distribution of Culture-Relevant Content')
+                     title='Distribution of Culture-Relevant Content',
+                     color_discrete_map={True: '#2ecc71', False: '#e74c3c'})
         
         # Add percentage labels
         fig.update_traces(textinfo='percent+label')
@@ -68,74 +84,52 @@ class PipelineVisualizer:
     def plot_knowledge_extraction_insights(self) -> go.Figure:
         """Create visualizations for knowledge extraction results."""
         df = self.read_pipeline_output('1_knowledge_extractor')
-        print(f"Available columns in knowledge extraction output: {df.columns.tolist()}")
         
         # Create a figure with subplots
         fig = go.Figure()
         
-        # Plot the distribution of extracted statements
-        if 'extracted_statement' in df.columns:
-            # Count non-null statements
-            total_statements = len(df)
-            valid_statements = df['extracted_statement'].notna().sum()
-            
-            values = [valid_statements, total_statements - valid_statements]
-            labels = ['Valid Statements', 'No Statements']
-            
-            fig = px.pie(values=values,
-                        names=labels,
-                        title='Distribution of Extracted Statements',
-                        color_discrete_sequence=['#3498db', '#e74c3c'])
-            
-            fig.update_traces(textinfo='percent+label')
-        else:
-            # If we don't have extracted_statement column, show what we have
-            fig.add_annotation(
-                text=f"Available columns: {', '.join(df.columns)}",
-                xref="paper", yref="paper",
-                x=0.5, y=0.5, showarrow=False
-            )
+        # Plot 1: Distribution of extracted insights
+        insight_counts = df['insight_type'].value_counts()
+        
+        fig.add_trace(go.Bar(
+            x=insight_counts.index,
+            y=insight_counts.values,
+            name='Insight Types',
+            marker_color='#3498db'
+        ))
+        
+        fig.update_layout(
+            title='Distribution of Extracted Cultural Insights',
+            xaxis_title='Insight Type',
+            yaxis_title='Count',
+            showlegend=False
+        )
         
         return fig
 
     def plot_clustering_analysis(self) -> go.Figure:
         """Create comprehensive visualizations for clustering results."""
         df = self.read_pipeline_output('3_clustering_component')
-        print(f"Available columns in clustering output: {df.columns.tolist()}")
         
         # Create a figure with subplots
         fig = go.Figure()
         
-        # Try to find cluster column
-        cluster_col = None
-        for possible_col in ['cluster_id', 'cluster', 'group_id', 'group']:
-            if possible_col in df.columns:
-                cluster_col = possible_col
-                break
+        # Plot 1: Cluster size distribution
+        cluster_sizes = df.groupby('cluster_id').size()
         
-        if cluster_col:
-            # Plot cluster size distribution
-            cluster_sizes = df[cluster_col].value_counts()
-            
-            fig.add_trace(go.Bar(
-                x=cluster_sizes.index.astype(str),
-                y=cluster_sizes.values,
-                name='Cluster Sizes',
-                marker_color='#9b59b6'
-            ))
-            
-            fig.update_layout(
-                title='Cluster Size Distribution',
-                xaxis_title='Cluster ID',
-                yaxis_title='Number of Statements',
-                showlegend=False
-            )
-        else:
-            fig.add_annotation(
-                text=f"Available columns: {', '.join(df.columns)}",
-                xref="paper", yref="paper",
-                x=0.5, y=0.5, showarrow=False
-            )
+        fig.add_trace(go.Bar(
+            x=cluster_sizes.index,
+            y=cluster_sizes.values,
+            name='Cluster Sizes',
+            marker_color='#9b59b6'
+        ))
+        
+        fig.update_layout(
+            title='Cluster Size Distribution',
+            xaxis_title='Cluster ID',
+            yaxis_title='Number of Statements',
+            showlegend=False
+        )
         
         return fig
 
@@ -283,34 +277,29 @@ class PipelineVisualizer:
     def generate_all_visualizations(self):
         """Generate all visualizations and save them to the output directory."""
         try:
-            # Generate and save each visualization with error handling for each
-            visualizations = {}
+            # Generate and save each visualization
+            visualizations = {
+                'culture_relevance': self.plot_culture_relevance_distribution(),
+                'knowledge_extraction': self.plot_knowledge_extraction_insights(),
+                'clustering_analysis': self.plot_clustering_analysis(),
+                'topic_normalization': self.plot_topic_normalization(),
+                'agreement_analysis': self.plot_agreement_analysis(),
+                'moderation_analysis': self.plot_moderation_analysis(),
+                'pii_detection': self.plot_pii_detection(),
+                'pipeline_summary': self.create_pipeline_summary_dashboard()
+            }
             
-            try:
-                visualizations['culture_relevance'] = self.plot_culture_relevance_distribution()
-            except Exception as e:
-                print(f"Error generating culture relevance visualization: {str(e)}")
-            
-            try:
-                visualizations['knowledge_extraction'] = self.plot_knowledge_extraction_insights()
-            except Exception as e:
-                print(f"Error generating knowledge extraction visualization: {str(e)}")
-            
-            try:
-                visualizations['clustering_analysis'] = self.plot_clustering_analysis()
-            except Exception as e:
-                print(f"Error generating clustering visualization: {str(e)}")
-            
-            # Only try to save visualizations that were successfully generated
+            # Save all visualizations
             for name, fig in visualizations.items():
                 try:
                     self.save_plot(fig, name)
-                    print(f"Successfully saved {name} visualization")
                 except Exception as e:
                     print(f"Error saving {name}: {str(e)}")
+                    continue
         
         except Exception as e:
             print(f"Error in generate_all_visualizations: {str(e)}")
+            # Print the full error traceback for debugging
             import traceback
             print(traceback.format_exc())
             raise
