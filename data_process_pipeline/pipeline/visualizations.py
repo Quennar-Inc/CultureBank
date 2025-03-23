@@ -53,13 +53,29 @@ class PipelineVisualizer:
         """Create a pie chart showing the distribution of culture-relevant vs non-relevant content."""
         df = self.read_pipeline_output('0_culture_relevance_classifier')
         
+        # Print available columns to help debug
+        print(f"Available columns in culture relevance output: {df.columns.tolist()}")
+        
+        # The column might be named differently, try to find the relevant column
+        relevance_column = None
+        possible_names = ['is_culture_relevant', 'culture_relevant', 'pred_label', 'prediction', 'label']
+        
+        for col in possible_names:
+            if col in df.columns:
+                relevance_column = col
+                break
+        
+        if relevance_column is None:
+            print("Could not find culture relevance column. Available columns:", df.columns)
+            raise ValueError("Could not find culture relevance column in the data")
+        
         # Count the distribution of culture relevance
-        relevance_counts = df['is_culture_relevant'].value_counts()
+        relevance_counts = df[relevance_column].value_counts()
         
         fig = px.pie(values=relevance_counts.values, 
-                    names=relevance_counts.index,
-                    title='Distribution of Culture-Relevant Content',
-                    color_discrete_map={True: '#2ecc71', False: '#e74c3c'})
+                     names=relevance_counts.index,
+                     title='Distribution of Culture-Relevant Content',
+                     color_discrete_map={True: '#2ecc71', False: '#e74c3c'})
         
         # Add percentage labels
         fig.update_traces(textinfo='percent+label')
@@ -260,21 +276,33 @@ class PipelineVisualizer:
 
     def generate_all_visualizations(self):
         """Generate all visualizations and save them to the output directory."""
-        # Generate and save each visualization
-        visualizations = {
-            'culture_relevance': self.plot_culture_relevance_distribution(),
-            'knowledge_extraction': self.plot_knowledge_extraction_insights(),
-            'clustering_analysis': self.plot_clustering_analysis(),
-            'topic_normalization': self.plot_topic_normalization(),
-            'agreement_analysis': self.plot_agreement_analysis(),
-            'moderation_analysis': self.plot_moderation_analysis(),
-            'pii_detection': self.plot_pii_detection(),
-            'pipeline_summary': self.create_pipeline_summary_dashboard()
-        }
+        try:
+            # Generate and save each visualization
+            visualizations = {
+                'culture_relevance': self.plot_culture_relevance_distribution(),
+                'knowledge_extraction': self.plot_knowledge_extraction_insights(),
+                'clustering_analysis': self.plot_clustering_analysis(),
+                'topic_normalization': self.plot_topic_normalization(),
+                'agreement_analysis': self.plot_agreement_analysis(),
+                'moderation_analysis': self.plot_moderation_analysis(),
+                'pii_detection': self.plot_pii_detection(),
+                'pipeline_summary': self.create_pipeline_summary_dashboard()
+            }
+            
+            # Save all visualizations
+            for name, fig in visualizations.items():
+                try:
+                    self.save_plot(fig, name)
+                except Exception as e:
+                    print(f"Error saving {name}: {str(e)}")
+                    continue
         
-        # Save all visualizations
-        for name, fig in visualizations.items():
-            self.save_plot(fig, name)
+        except Exception as e:
+            print(f"Error in generate_all_visualizations: {str(e)}")
+            # Print the full error traceback for debugging
+            import traceback
+            print(traceback.format_exc())
+            raise
 
 if __name__ == "__main__":
     # Use paths relative to current directory (pipeline/)
