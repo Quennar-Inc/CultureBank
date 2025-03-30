@@ -1,0 +1,4 @@
+cluster_id,cultural group,context,goal,relation,actor,actor_behavior,recipient,recipient_behavior,other_descriptions,topic,agreement,num_support_bin,time_range
+0,Australians,Australia and high-end places,Cost-effective dining,Interaction,Australians,Optional tipping for saving money,Service industry workers,Acceptance of no tip or receipt of tip,,Social Norms and Etiquette,1.0,"[1, 5)","{2017: '[0, 10)', 2023: '[0, 10)'}"
+2,Chinese people,China,Seek convenience and efficiency in transactions,,People in China,"Prefer cashless payments (e.g., AliPay)",,,,Finance and Economy,1.0,"[1, 5)","{2022: '[0, 10)'}"
+3,Americans,America,Rewarding good service,Interaction between traveler and Americans,Traveler from another country,Providing tips as a cultural practice,Americans,Accepting and expecting tips,,Consumer Behavior,1.0,"[1, 5)","{2021: '[0, 10)'}"
