@@ -90,4 +90,3 @@ result_base_dir: ./data_process_pipeline/results
   input_file: data_process_pipeline/results/7_content_moderation/output.csv
   output_file: data_process_pipeline/results/8_final_formatter/output.csv
   controversial_annotation_file: data_process_pipeline/results/7_content_moderation/human_annotation.csv
- 
