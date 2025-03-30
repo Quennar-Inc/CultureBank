@@ -39,7 +39,128 @@ The pipeline contains 9 components (see [`data_process_pipeline/pipeline/main_pi
 7. [`data_process_pipeline/pipeline/component_7_content_moderation.py`](data_process_pipeline/pipeline/component_7_content_moderation.py): identify potentially controversial and PII data for annotation 
 8. [`data_process_pipeline/pipeline/component_8_final_formatter.py`](data_process_pipeline/pipeline/component_8_final_formatter.py): format the final data 
 
+## Detailed Pipeline Steps
 
+Here is a complete breakdown of all 9 steps (Step 0–8) in the CultureBank pipeline, covering functionality, importance, and column breakdowns:
+
+### Step 0: Cultural Relevance Classifier
+**Functionality**
+- Filters input comments to determine whether they are culturally relevant
+- A classifier identifies if a comment pertains to cultural identity, values, or practices
+
+**Importance**
+- Ensures that only meaningful cultural data flows through the pipeline
+- Eliminates irrelevant noise
+
+**Key Columns**
+- `comment`: The raw user input
+- `is_culturally_relevant`: Boolean label for cultural relevance
+- `relevance_score`: (Optional) Confidence of classification
+
+### Step 1: Knowledge Extractor
+**Functionality**
+- Extracts structured cultural data (e.g., groups, behaviors, goals) from culturally relevant comments using a language model
+
+**Importance**
+- Transforms unstructured language into a structured cultural taxonomy for processing and analysis
+
+**Key Columns**
+- `vid / vid_unique`: IDs to trace data origin
+- `comment_utc`: Timestamp
+- `cultural group, context`: Identity and setting
+- `actor / recipient`: Who performs and who receives the cultural behavior
+- `relation`: Social connection between actor and recipient
+- `actor's behavior / recipient's behavior`: Actions taken
+- `goal`: Motivation for the action
+- `other descriptions`: Additional narrative content
+- `norm`: Whether the behavior is considered normative (1), non-normative (0), or mixed ([1, 0])
+
+### Step 2: Negation Converter
+**Functionality**
+- Detects and transforms statements of cultural absence (e.g., "We don't do this") by modifying extracted descriptors
+
+**Importance**
+- Captures culturally meaningful exceptions or contrasts which are often overlooked in typical extraction
+
+**Key Column Affected**
+- `norm`: Modified to reflect negated behaviors (e.g., becoming 0 instead of 1)
+
+### Step 3: Clustering
+**Functionality**
+- Groups similar extractions into clusters using semantic similarity (e.g., sentence embeddings)
+
+**Importance**
+- Identifies consensus and variation in how cultural behaviors are described
+- Reduces duplication
+
+**Key Columns**
+- All Step 1 fields
+- `cluster_id`: Unique ID for the cluster
+- `cluster_size`: Number of descriptors in the cluster
+- `raw_sample_vids / raw_samples`: Track entries in the cluster
+- `raw_sample_norms / raw_sample_times`: Normative diversity and temporal trends
+
+### Step 4: Cluster Summarizer
+**Functionality**
+- Generates an LLM-based summary of each cluster to represent shared cultural meaning
+
+**Importance**
+- Creates a readable, representative descriptor of each cluster—human- and model-friendly
+
+**Key Columns**
+- `cluster_id`
+- `topic`: Cluster theme
+- `actor's behavior / goal / recipient_behavior`: Synthesized actions and motivations
+- Inherits structured fields from Step 3
+
+### Step 5: Topic Normalizer
+**Functionality**
+- Standardizes cultural group names and topic labels using a normalization mapping
+
+**Importance**
+- Enables search, comparison, and taxonomy alignment across diverse expressions
+
+**Key Columns**
+- `representative_cultural group`: Canonical group label
+- `representative_topic`: Normalized topic
+- `representative_cultural group_count / _cluster_id`: Metadata for frequency and grouping
+
+### Step 6: Agreement Calculator
+**Functionality**
+- Scores how much agreement exists within each cluster about whether the behavior is a norm
+
+**Importance**
+- Measures community consensus, critical for evaluating representativeness and reliability
+
+**Key Columns**
+- `norm`: Final agreement score (1.0, 0.0, or NaN)
+- `raw_sample_norms`: Source values for agreement
+
+### Step 7: Content Moderation
+**Functionality**
+- Flags clusters for potential controversial content or PII, using classifiers and NER (Named Entity Recognition)
+
+**Importance**
+- Ensures safe, ethical training data and prepares content for human review if needed
+
+**Key Columns** (from output_for_annotation.csv)
+- `text_for_controversial_prediction`: Input for moderation
+- `pred_label / pred_score`: Model output
+- `pii_result / keywords_list`: Named entities detected
+- `controversial_or_PII`: Human annotation flag
+
+### Step 8: Final Formatter
+**Functionality**
+- Packages cleaned, moderated cultural knowledge into a final format for model fine-tuning or deployment
+
+**Importance**
+- Consolidates all upstream steps into a consistent, structured, filtered dataset
+
+**Key Columns**
+- `actor_behavior / recipient_behavior / goal / topic / context`: Final descriptors
+- `agreement`: Final agreement score
+- `num_support_bin`: Indicates how many examples support the behavior
+- `time_range`: Year-wise distribution of supporting comments
 
 ## How to run the pipeline
 1. Prepare a data file, e.g., the provided [`dummy data file`](data_process_pipeline/dummy_data/comments.csv)
