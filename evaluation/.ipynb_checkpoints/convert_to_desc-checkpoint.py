@@ -23,6 +23,21 @@ from utils.prompt_utils import (
 )
 from utils.constants import DESC_FIELDS
 
+# Add column name mapping
+COLUMN_MAP = {
+    "actor's behavior": "actor_behavior",
+    "recipient's behavior": "recipient_behavior"
+}
+
+def get_field_value(df_line, field):
+    """Helper function to get field value handling both formats of column names"""
+    if field in df_line:
+        return df_line[field]
+    # Check if this is one of the fields that might use underscore
+    underscore_field = COLUMN_MAP.get(field)
+    if underscore_field and underscore_field in df_line:
+        return df_line[underscore_field]
+    return None
 
 def main():
     parser = argparse.ArgumentParser()
@@ -78,7 +93,9 @@ def main():
                 df_line = df.loc[idx]
                 cultural_knowledge = {}
                 for field in DESC_FIELDS:
-                    cultural_knowledge[field] = df_line[field]
+                    value = get_field_value(df_line, field)
+                    if value is not None:
+                        cultural_knowledge[field] = value
 
                 user_message = DESC_USER_TEMPLATE.format(
                     json.dumps(cultural_knowledge, indent=4)
