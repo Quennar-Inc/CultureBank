@@ -1,13 +1,14 @@
 """
 Example Usage:
 
-python evaluation/generate_questions.py --data_file <cultural_descriptions_file> --output_file <output_path> --pattern adapter --model mistralai/Mixtral-8x7B-Instruct-v0.1 --adapters <path_to_customized_adapter> --split full
+python evaluation/generate_questions_aug.py --data_file <cultural_descriptions_file_or_preliminary_questions> --output_file <output_path> --knowledge_file <cultural_descriptions_file> --pattern adapter --model mistralai/Mixtral-8x7B-Instruct-v0.1 --adapters <path_to_customized_adapter> --split full
 """
 
 from transformers import AutoTokenizer
 from tqdm import tqdm
 from peft import PeftModel, AutoPeftModelForCausalLM, LoraConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from openai import OpenAI
 
 import pandas as pd
 import numpy as np
@@ -41,6 +42,32 @@ def main():
 
     model_name = args.model
     tokenizer_path = args.tokenizer if args.tokenizer else model_name
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI()
+
+    # Add device detection
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device: {device}")
+    
+    # Configure model settings based on device
+    model_config = {
+        "torch_dtype": torch.bfloat16 if device == "cuda" else torch.float32,
+        "device_map": {"": 0} if device == "cuda" else "cpu",
+    }
+    
+    # Only import and use GPU-specific configurations if CUDA is available
+    if device == "cuda":
+        from transformers import BitsAndBytesConfig
+        model_config.update({
+            "load_in_4bit": True,
+            "quantization_config": BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16,
+                bnb_4bit_use_double_quant=False,
+            ),
+            "attn_implementation": "flash_attention_2",
+        })
 
     if args.pattern == "adapter":
         assert len(args.adapters) >= 1
@@ -49,52 +76,32 @@ def main():
             # No need to merge
             text_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                torch_dtype=torch.bfloat16,
-                load_in_4bit=True,
-                device_map={"": 0},
-                quantization_config=BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_quant_type="nf4",
-                    bnb_4bit_compute_dtype=torch.bfloat16,
-                    bnb_4bit_use_double_quant=False,
-                ),
-                attn_implementation="flash_attention_2",
+                **model_config
             )
-            pass
         elif len(args.adapters) > 1:
             # Need to merge
             text_model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                torch_dtype=torch.bfloat16,
-                device_map="auto",
+                torch_dtype=model_config["torch_dtype"],
+                device_map=model_config["device_map"],
             )
         print("----------------------------------------------------")
         print(f"Loaded the model {model_name}")
 
         if len(args.adapters) == 1:
             text_model = PeftModel.from_pretrained(text_model, args.adapters[0])
-
             print("--------------------NO MERGING----------------------")
             print(f"Loaded the adapter model {args.adapters[0]}")
         elif len(args.adapters) > 1:
             for adapter_name in args.adapters:
                 text_model = PeftModel.from_pretrained(text_model, adapter_name)
                 text_model = text_model.merge_and_unload()
-
                 print("----------------------MERGING-----------------------")
                 print(f"Loaded the adapter model {adapter_name}")
     elif args.pattern == "merged" or args.pattern == "plain":
         text_model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.bfloat16,
-            device_map={"": 0},
-            quantization_config=BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.bfloat16,
-                bnb_4bit_use_double_quant=False,
-            ),
-            attn_implementation="flash_attention_2",
+            **model_config
         )
     else:
         raise NotImplementedError
@@ -151,7 +158,7 @@ def main():
             output_text = None
             for _ in range(num_retries):
                 try:
-                    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+                    inputs = tokenizer(prompt, return_tensors="pt").to(device)  # Change cuda to device
                     outputs = text_model.generate(
                         **inputs,
                         max_new_tokens=max_tokens,
