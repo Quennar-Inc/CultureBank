@@ -30,15 +30,42 @@ We provide:
 The pipeline contains 9 components (see [`data_process_pipeline/pipeline/main_pipeline.py`](data_process_pipeline/pipeline/main_pipeline.py)).
 
 0. [`data_process_pipeline/pipeline/component_0_culture_relevance_classifier.py`](data_process_pipeline/pipeline/component_0_culture_relevance_classifier.py): classify if a comment is related to culture 
-1. [`data_process_pipeline/pipeline/component_1_knowledge_extractor.py.py`](data_process_pipeline/pipeline/component_1_knowledge_extractor.py.py): extract cultural information from the comment
-2. [`data_process_pipeline/pipeline/component_2_negation_converter.py`](data_process_pipeline/pipeline/component_2_negation_converter.py): convert positive sentences to negative forms
-3. [`data_process_pipeline/pipeline/component_3_clustering.py`](data_process_pipeline/pipeline/component_3_clustering.py): perform clustering
-4. [`data_process_pipeline/pipeline/component_4_cluster_summarizer.py`](data_process_pipeline/pipeline/component_4_cluster_summarizer.py): summarize the clusters 
-5. [`data_process_pipeline/pipeline/component_5_topic_normalization.py`](data_process_pipeline/pipeline/component_5_topic_normalization.py): normalize the cultural groups and topics
-6. [`data_process_pipeline/pipeline/component_6_agreement_calculator.py`](data_process_pipeline/pipeline/component_6_agreement_calculator.py): calculate the agreement values 
-7. [`data_process_pipeline/pipeline/component_7_content_moderation.py`](data_process_pipeline/pipeline/component_7_content_moderation.py): identify potentially controversial and PII data for annotation 
-8. [`data_process_pipeline/pipeline/component_8_final_formatter.py`](data_process_pipeline/pipeline/component_8_final_formatter.py): format the final data 
+   - Uses fine-tuned model: `SALT-NLP/CultureBank-Relevance-Classifier` (based on distilbert-base-uncased)
 
+1. [`data_process_pipeline/pipeline/component_1_knowledge_extractor.py.py`](data_process_pipeline/pipeline/component_1_knowledge_extractor.py.py): extract cultural information from the comment
+   - Uses base model: `mistralai/Mistral-7B-Instruct-v0.2` (vanilla) or fine-tuned model: `SALT-NLP/CultureBank-Extractor` (with adapters)
+
+2. [`data_process_pipeline/pipeline/component_2_negation_converter.py`](data_process_pipeline/pipeline/component_2_negation_converter.py): convert positive sentences to negative forms
+   - Uses `spacy` with `en_core_web_sm` model
+
+3. [`data_process_pipeline/pipeline/component_3_clustering.py`](data_process_pipeline/pipeline/component_3_clustering.py): perform clustering
+   - Uses `sentence-transformers` with `all-MiniLM-L6-v2` model
+
+4. [`data_process_pipeline/pipeline/component_4_cluster_summarizer.py`](data_process_pipeline/pipeline/component_4_cluster_summarizer.py): summarize the clusters 
+   - Uses base model: `mistralai/Mistral-7B-Instruct-v0.2` (vanilla) or fine-tuned model: `SALT-NLP/CultureBank-Summarizer` (with adapters)
+
+5. [`data_process_pipeline/pipeline/component_5_topic_normalization.py`](data_process_pipeline/pipeline/component_5_topic_normalization.py): normalize the cultural groups and topics
+   - Uses `sentence-transformers` with `all-MiniLM-L6-v2` for clustering
+   - Uses `gpt-3.5-turbo-1106` for topic normalization
+
+6. [`data_process_pipeline/pipeline/component_6_agreement_calculator.py`](data_process_pipeline/pipeline/component_6_agreement_calculator.py): calculate the agreement values 
+   - No models used, pure calculation
+
+7. [`data_process_pipeline/pipeline/component_7_content_moderation.py`](data_process_pipeline/pipeline/component_7_content_moderation.py): identify potentially controversial and PII data for annotation 
+   - Uses fine-tuned model: `SALT-NLP/CultureBank-Controversial-Classifier`
+   - Uses `presidio_analyzer` for PII detection
+   - Uses keyword filtering
+
+8. [`data_process_pipeline/pipeline/component_8_final_formatter.py`](data_process_pipeline/pipeline/component_8_final_formatter.py): format the final data 
+   - No models used, pure formatting
+
+**Note on Model Usage:**
+- The pipeline can run in two modes:
+  1. Vanilla mode: Uses base models without fine-tuning
+  2. Fine-tuned mode: Uses specialized fine-tuned models with adapters
+- Configuration files:
+  - `config_dummy_data_vanilla_mistral.yaml`: Uses vanilla models (lighter on GPU memory)
+  - `config_dummy_data_finetuned_mixtral.yaml`: Uses fine-tuned models with adapters (requires ~27GB GPU memory)
 
 
 ## How to run the pipeline
