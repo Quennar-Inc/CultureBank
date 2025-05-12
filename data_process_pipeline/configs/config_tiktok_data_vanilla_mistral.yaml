@@ -8,7 +8,7 @@ result_base_dir: ./data_process_pipeline/tiktok_results
   classifier_path: SALT-NLP/CultureBank-Relevance-Classifier
   model_name: distilbert-base-uncased
   device: cuda:0
-  field_name_with_comments: eval_whole_desc
+  field_name_with_comments: comment_content
   batch_size: 512
   field_name_with_submission_title: eval_scenario
   field_name_with_vid: topic

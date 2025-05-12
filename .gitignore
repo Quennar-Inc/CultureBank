@@ -1,1 +1,30 @@
-*.pyc
+# Python virtual environments
+venv/
+env/
+.env
+.venv
+ENV/
+culturebank/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
