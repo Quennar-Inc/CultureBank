@@ -3,7 +3,7 @@ result_base_dir: ./data_process_pipeline/tiktok_results
 
 # culture relevance classifier
 0_culture_relevance_classifier:
-  input_file: data_process_pipeline/tiktok_data/tiktok_subset.csv
+  input_file: data_process_pipeline/tiktok_data/tiktok_mini.csv
   output_file: data_process_pipeline/tiktok_results/0_culture_relevance_classifier/output.csv
   classifier_path: SALT-NLP/CultureBank-Relevance-Classifier
   model_name: distilbert-base-uncased

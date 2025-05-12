@@ -1,0 +1,165 @@
+vid,comment_utc,submission_title,comment_content,pred_label,pred_score,has_culture,model_resp,json_output,vid_unique
+0,0,Travel Advising,"In American work and school schedules, it is common for people and students to wake up early, often before 6am, with the goal of being punctual and maintaining energy levels throughout the day. This early start time is widely regarded as the norm within the sampled population. However, it is important to note that these early start times can contribute to fatigue, reflecting a trade-off between punctuality and potential exhaustion. This cultural behavior is considered a standard practice by a significant portion of the sampled population, emphasizing the value placed on timeliness and productivity in American society.",Yes,0.94,True," Yes, the comment contains cultural knowledge. Here is the extracted information:
+
+[
+{
+""cultural group"": ""Americans"",
+""context"": ""work and school"",
+""actor"": ""people and students"",
+""recipient"": ""society"",
+""relation"": ""societal expectation"",
+""actor's behavior"": ""waking up early, before 6am"",
+""goal"": ""punctuality and maintaining energy levels"",
+""recipient's behavior"": ""valuing timeliness and productivity"",
+""other descriptions"": ""early start times contribute to fatigue"",
+""norm"": ""1""
+}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""work and school"", ""actor"": ""people and students"", ""recipient"": ""society"", ""relation"": ""societal expectation"", ""actor's behavior"": ""waking up early, before 6am"", ""goal"": ""punctuality and maintaining energy levels"", ""recipient's behavior"": ""valuing timeliness and productivity"", ""other descriptions"": ""early start times contribute to fatigue"", ""norm"": ""1""}]",0-0
+1,0,Travel Advising,"In the United States, particularly in California, people exhibit diverse attitudes towards sports, ranging from strong enthusiasm to dislike, often favoring local teams and specific sports. Sports are widely commercialized and popular, with a notable preference for watching sports through television shows rather than actively participating. This behavior is considered normative by a significant portion of the sampled population.",Yes,0.94,True," Yes, the comment contains cultural knowledge. Here's the extracted information:
+
+[
+{
+""cultural group"": ""Californians in the United States"",
+""context"": ""California, United States"",
+""actor"": ""Californians"",
+""recipient"": ""Sports"",
+""relation"": ""Interest/Engagement"",
+""actor's behavior"": ""Exhibiting diverse attitudes towards sports, favoring local teams and specific sports, commercializing and watching sports through television shows"",
+""goal"": ""Expressing personal preferences and enjoying sports"",
+""recipient's behavior"": ""Being the object of Californians' interest and engagement"",
+""norm"": ""1""
+}
+]
+
+<EOD>","[{""cultural group"": ""Californians in the United States"", ""context"": ""California, United States"", ""actor"": ""Californians"", ""recipient"": ""Sports"", ""relation"": ""Interest/Engagement"", ""actor's behavior"": ""Exhibiting diverse attitudes towards sports, favoring local teams and specific sports, commercializing and watching sports through television shows"", ""goal"": ""Expressing personal preferences and enjoying sports"", ""recipient's behavior"": ""Being the object of Californians' interest and engagement"", ""norm"": ""1""}]",1-1
+2,0,Travel Advising,"In the United States, it is common for people to consume genetically modified (GMO) foods and hold diverse opinions regarding their safety and regulation. The association of GMO foods with preservatives and larger produce is prevalent, and it is noteworthy that the consumption of GMO foods is prohibited in some countries. Within the American cultural context, the consumption of GMO foods is widely regarded as a standard practice by a significant portion of the sampled population.",Yes,0.94,True," Yes, the comment contains cultural knowledge. Here's the extracted information:
+
+[
+{
+""cultural group"": ""Americans"",
+""context"": ""United States"",
+""actor"": ""significant portion of the sampled population"",
+""recipient"": ""people"",
+""relation"": ""consumers"",
+""actor's behavior"": ""consumption of genetically modified foods"",
+""goal"": ""satisfaction of food needs"",
+""recipient's behavior"": ""also consumption of genetically modified foods"",
+""other descriptions"": ""diverse opinions regarding safety and regulation, association with preservatives and larger produce, prohibition in some countries""
+},
+{
+""cultural group"": ""Americans"",
+""context"": ""United States"",
+""actor"": ""significant portion of the sampled population"",
+""recipient"": ""people"",
+""relation"": ""regulators and consumers"",
+""actor's behavior"": ""consumption of genetically modified foods with diverse opinions"",
+""goal"": ""personal food choices"",
+""recipient's behavior"": ""regulation of genetically modified foods"",
+""other descriptions"": ""association with preservatives and larger produce, prohibition in some countries""
+}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""United States"", ""actor"": ""significant portion of the sampled population"", ""recipient"": ""people"", ""relation"": ""consumers"", ""actor's behavior"": ""consumption of genetically modified foods"", ""goal"": ""satisfaction of food needs"", ""recipient's behavior"": ""also consumption of genetically modified foods"", ""other descriptions"": ""diverse opinions regarding safety and regulation, association with preservatives and larger produce, prohibition in some countries""}, {""cultural group"": ""Americans"", ""context"": ""United States"", ""actor"": ""significant portion of the sampled population"", ""recipient"": ""people"", ""relation"": ""regulators and consumers"", ""actor's behavior"": ""consumption of genetically modified foods with diverse opinions"", ""goal"": ""personal food choices"", ""recipient's behavior"": ""regulation of genetically modified foods"", ""other descriptions"": ""association with preservatives and larger produce, prohibition in some countries""}]",2-2
+3,0,Travel Advising,"In various settings within American culture, it is common for people to predominantly communicate in English, with occasional use of local languages or variations of American English. There is an expectation for language understanding, although there are exceptions in specific contexts, such as interactions with individuals from England. This linguistic behavior is widely regarded as the norm by a significant portion of the sampled population.",Yes,0.95,True," Yes, the comment contains cultural knowledge.
+
+[
+{""cultural group"": ""Americans"", ""context"": ""Various settings within American culture"", ""actor"": ""People"", ""reciprocal behavior"": { ""actor"": ""People"", ""recipient"": ""People"" }, ""relation"": ""Interactions between people"", ""actor's behavior"": ""Communicating predominantly in English with occasional use of local languages or variations of American English"", ""goal"": ""Effective communication"", ""norm"": 1}
+]
+
+<EOD>",,3-3
+4,0,Travel Advising,"In American school and public settings, it is common for students and citizens to sing, recite, and demonstrate respect for the national anthem as a patriotic or civic duty. The goal of this behavior is to learn and display reverence for the national anthem, reflecting a sense of national pride and unity. However, there are instances where some schools are phasing out this practice, and there is a potential risk of suspension for individuals who choose not to participate. Despite these variations, the majority of the sampled population regards this behavior as normative, reflecting a widespread acceptance and adherence to the tradition of honoring the national anthem.",Yes,0.94,True," Yes, the comment contains cultural knowledge. Here is the extracted information:
+
+[
+{
+""cultural group"": ""Americans"",
+""context"": ""school and public settings"",
+""actor"": ""students and citizens"",
+""recipient"": ""national anthem"",
+""relation"": ""show respect and honor"",
+""actor's behavior"": ""sing, recite, and demonstrate respect"",
+""goal"": ""learn and display reverence, reflect national pride and unity"",
+""recipient's behavior"": ""none mentioned"",
+""other descriptions"": ""potential risk of suspension for non-participation, widespread acceptance and adherence to the tradition"",
+""norm"": ""1""
+}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""school and public settings"", ""actor"": ""students and citizens"", ""recipient"": ""national anthem"", ""relation"": ""show respect and honor"", ""actor's behavior"": ""sing, recite, and demonstrate respect"", ""goal"": ""learn and display reverence, reflect national pride and unity"", ""recipient's behavior"": ""none mentioned"", ""other descriptions"": ""potential risk of suspension for non-participation, widespread acceptance and adherence to the tradition"", ""norm"": ""1""}]",4-4
+5,0,Travel Advising,"In the United States, it is increasingly common for people, including teachers and mothers, to get tattoos, with a growing level of acceptance and visibility. This trend is particularly notable within the parent-child relationship, where daughters may also choose to get tattoos. The visibility of tattoos and the serious commitment they represent are significant aspects of this cultural behavior. The sampled population widely regards this behavior as normative, with around four-fifths of the population agreeing that it is an accepted practice.",Yes,0.94,True," Yes, the comment contains cultural knowledge. Here is the extracted information:
+
+[
+{
+""cultural group"": ""Americans"",
+""context"": ""United States"",
+""actor"": ""people, including teachers and mothers"",
+""recipient"": ""daughters"",
+""relation"": ""parent-child"",
+""actor's behavior"": ""getting tattoos"",
+""goal"": ""representing a serious commitment"",
+""recipient's behavior"": ""getting tattoos"",
+""norm"": ""1""
+}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""United States"", ""actor"": ""people, including teachers and mothers"", ""recipient"": ""daughters"", ""relation"": ""parent-child"", ""actor's behavior"": ""getting tattoos"", ""goal"": ""representing a serious commitment"", ""recipient's behavior"": ""getting tattoos"", ""norm"": ""1""}]",5-5
+6,0,Travel Advising,"In restaurants, particularly in the United States, there is a common tendency for American customers to be in a rush, leading to a desire for quick meals and efficient service. This often results in rushed service and a fast-paced dining experience. Service staff may also feel the need to rush customers in order to ensure efficiency. The goal for both parties is to achieve an efficient dining experience. However, it is important to note that wait times and service expectations can vary. This behavior is perceived as somewhat common within the sampled population, with around half of the population agreeing that this rushed dining experience is typical in American restaurants.",Yes,0.95,True," Yes, the comment contains cultural knowledge. Here is the extracted cultural knowledge in the required format:
+
+[
+{
+""cultural group"": ""Americans"",
+""context"": ""Restaurants in the United States"",
+""actor"": ""American customers"",
+""recipient"": ""Service staff in American restaurants"",
+""relation"": ""Interaction between customers and service staff"",
+""actor's behavior"": ""Desire for quick meals and efficient service"",
+""goal"": ""Efficient dining experience"",
+""recipient's behavior"": ""Rushed service and fast-paced dining experience"",
+""norm"": ""1""
+},
+{
+""cultural group"": ""Americans"",
+""context"": ""Restaurants in the United States"",
+""actor"": ""Service staff in American restaurants"",
+""recipient"": ""American customers"",
+""relation"": ""Interaction between service staff and customers"",
+""actor's behavior"": ""Feeling the need to rush customers for efficiency"",
+""goal"": ""Efficient dining experience"",
+""recipient's behavior"": ""Desire for quick meals and efficient service"",
+""norm"": ""1""
+}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""Restaurants in the United States"", ""actor"": ""American customers"", ""recipient"": ""Service staff in American restaurants"", ""relation"": ""Interaction between customers and service staff"", ""actor's behavior"": ""Desire for quick meals and efficient service"", ""goal"": ""Efficient dining experience"", ""recipient's behavior"": ""Rushed service and fast-paced dining experience"", ""norm"": ""1""}, {""cultural group"": ""Americans"", ""context"": ""Restaurants in the United States"", ""actor"": ""Service staff in American restaurants"", ""recipient"": ""American customers"", ""relation"": ""Interaction between service staff and customers"", ""actor's behavior"": ""Feeling the need to rush customers for efficiency"", ""goal"": ""Efficient dining experience"", ""recipient's behavior"": ""Desire for quick meals and efficient service"", ""norm"": ""1""}]",6-6
+7,0,Travel Advising,"In American social interactions and private conversations, it is common for people to display a blend of friendly and disingenuous behavior, often perceived as fake or excessively nice. This behavior is subject to mixed perceptions within the cultural group, with some viewing it as insincere or superficial. The sampled population holds varied opinions regarding the normativity of this behavior, indicating that it is not universally accepted or rejected.",Yes,0.93,True," Yes, the comment contains cultural knowledge. Here is the extracted cultural knowledge:
+
+[
+{
+""cultural group"": ""Americans"",
+""context"": ""American social interactions and private conversations"",
+""actor"": ""People in the American cultural group"",
+""recipient"": ""Other people in the American cultural group"",
+""relation"": ""Interpersonal relationships"",
+""actor's behavior"": ""Displaying a blend of friendly and disingenuous behavior"",
+""goal"": ""Maintaining social harmony and avoiding conflict"",
+""recipient's behavior"": ""Perception of the behavior as insincere or superficial"",
+""norm"": ""0""
+}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""American social interactions and private conversations"", ""actor"": ""People in the American cultural group"", ""recipient"": ""Other people in the American cultural group"", ""relation"": ""Interpersonal relationships"", ""actor's behavior"": ""Displaying a blend of friendly and disingenuous behavior"", ""goal"": ""Maintaining social harmony and avoiding conflict"", ""recipient's behavior"": ""Perception of the behavior as insincere or superficial"", ""norm"": ""0""}]",7-7
+8,0,Travel Advising,"In the United States, it is common for people to have a preference for drinking water at room temperature or with ice, often expressing a distaste for room temperature water as stale. This preference for water temperature is widely regarded as the norm within the sampled population.",Yes,0.94,True," Yes, the comment contains cultural knowledge.
+
+[
+{""cultural group"": ""Americans"", ""context"": ""United States"", ""actor"": ""people"", ""recipient"": ""water"", ""relation"": ""preference for"", ""actor's behavior"": ""preferring to drink water at room temperature or with ice"", ""goal"": ""to find water palatable"", ""recipient's behavior"": ""being consumed as is or with added ice"", ""other descriptions"": ""distaste for room temperature water"", ""norm"": ""1""}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""United States"", ""actor"": ""people"", ""recipient"": ""water"", ""relation"": ""preference for"", ""actor's behavior"": ""preferring to drink water at room temperature or with ice"", ""goal"": ""to find water palatable"", ""recipient's behavior"": ""being consumed as is or with added ice"", ""other descriptions"": ""distaste for room temperature water"", ""norm"": ""1""}]",8-8
+9,0,Travel Advising,"In the United States and abroad, it is common for people to express a deep appreciation and admiration for the natural beauty of the country, often marveling at its diverse landscapes and natural wonders. This admiration for the unique and stunning features of the American landscape is widely regarded as a normative behavior among a significant portion of the sampled population. This cultural trait reflects a widespread sentiment of awe and respect for the natural environment, showcasing a collective recognition of the country's natural splendor.",Yes,0.94,True," Yes, the comment contains cultural knowledge.
+
+[
+{""cultural group"": ""Americans"", ""context"": ""United States and abroad"", ""actor"": ""people"", ""recipient"": ""American landscape"", ""relation"": ""appreciation"", ""actor's behavior"": ""express deep appreciation and admiration"", ""goal"": ""show awe and respect"", ""norm"": ""1""}
+]
+
+<EOD>","[{""cultural group"": ""Americans"", ""context"": ""United States and abroad"", ""actor"": ""people"", ""recipient"": ""American landscape"", ""relation"": ""appreciation"", ""actor's behavior"": ""express deep appreciation and admiration"", ""goal"": ""show awe and respect"", ""norm"": ""1""}]",9-9
