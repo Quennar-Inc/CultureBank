@@ -8,7 +8,6 @@ from transformers import AutoTokenizer
 from tqdm import tqdm
 from peft import PeftModel, AutoPeftModelForCausalLM, LoraConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from openai import OpenAI
 
 import pandas as pd
 import numpy as np
@@ -43,29 +42,6 @@ def main():
     model_name = args.model
     tokenizer_path = args.tokenizer if args.tokenizer else model_name
     
-    # Check if CUDA is available
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Using device: {device}")
-    
-    # Configure model settings based on device
-    model_config = {
-        "torch_dtype": torch.bfloat16 if device == "cuda" else torch.float32,
-        "device_map": {"": 0} if device == "cuda" else "cpu",
-    }
-    
-    # Add GPU-specific configurations only if CUDA is available
-    if device == "cuda":
-        model_config.update({
-            "load_in_4bit": True,
-            "quantization_config": BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.bfloat16,
-                bnb_4bit_use_double_quant=False,
-            ),
-            "attn_implementation": "flash_attention_2",
-        })
-
     # Check if CUDA is available
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using device: {device}")
@@ -119,7 +95,6 @@ def main():
                 text_model = text_model.merge_and_unload()
                 print("----------------------MERGING-----------------------")
                 print(f"Loaded the adapter model {adapter_name}")
-    
     elif args.pattern == "merged" or args.pattern == "plain":
         text_model = AutoModelForCausalLM.from_pretrained(
             model_name,
@@ -162,6 +137,7 @@ def main():
     max_tokens = 1024
     top_p = 0.8
     top_k = 50
+    # seed = 1234
 
     num_retries = 10
     num_samples = 1
@@ -179,70 +155,7 @@ def main():
             output_text = None
             for _ in range(num_retries):
                 try:
-                    good_question = True
-                    curr_score = 0
-                    for i in range(len(eval_questions)):
-                        eval_question = eval_questions[i]
-                        eval_threshold = eval_thresholds[i]
-                        eval_messages = [
-                            {"role": "system", "content": QUESTION_EVAL_SYSTEM_PROMPT},
-                            {
-                                "role": "user",
-                                "content": QUESTION_EVAL_USER_TEMPLATE.format(
-                                    knowledge_line["desc"],
-                                    json_output["Question"],
-                                    eval_question,
-                                ),
-                            },
-                        ]
-                        response = client.chat.completions.create(
-                            model=gpt_model,
-                            messages=eval_messages,
-                            seed=gpt_seed,
-                            temperature=gpt_temperature,
-                            max_tokens=gpt_max_tokens,
-                            top_p=gpt_top_p,
-                            logprobs=True,
-                            top_logprobs=5,
-                        )
-
-                        top_logprobs = (
-                            response.choices[0].logprobs.content[0].top_logprobs
-                        )
-
-                        yes_prob = 0
-                        for logprob in top_logprobs:
-                            if logprob.token == "Yes":
-                                yes_prob = math.exp(logprob.logprob)
-                                curr_score += yes_prob
-                                break
-
-                        if args.sanity_check:
-                            print(top_logprobs)
-                            print(f"yes_prob: {yes_prob}")
-
-                        if yes_prob < eval_threshold:
-                            good_question = False
-
-                    if good_question:
-                        output_row["scenario"] = json_output["Scenario"]
-                        output_row["persona"] = json_output["Persona"]
-                        output_row["question"] = json_output["Question"]
-                        break
-
-                    if curr_score > best_score:
-                        best_score = curr_score
-                        output_row["scenario"] = json_output["Scenario"]
-                        output_row["persona"] = json_output["Persona"]
-                        output_row["question"] = json_output["Question"]
-
-                    print(
-                        f"The generated question does not meet the quality standard, retrying..."
-                    )
-                    print(f"Knowledge: {knowledge_line['desc']}")
-                    print(f"Generated question: {json_output['Question']}")
-                    print()
-                    inputs = tokenizer(prompt, return_tensors="pt").to(device)  # Updated to use detected device
+                    inputs = tokenizer(prompt, return_tensors="pt").to(device)  # Use detected device
                     outputs = text_model.generate(
                         **inputs,
                         max_new_tokens=max_tokens,
