@@ -3,13 +3,16 @@ result_base_dir: ./data_process_pipeline/tiktok_results
 
 # culture relevance classifier
 0_culture_relevance_classifier:
-  input_file: tiktok_subset.csv
+  input_file: data_process_pipeline/tiktok_data/tiktok_subset.csv
   output_file: data_process_pipeline/tiktok_results/0_culture_relevance_classifier/output.csv
   classifier_path: SALT-NLP/CultureBank-Relevance-Classifier
   model_name: distilbert-base-uncased
   device: cuda:0
   field_name_with_comments: eval_whole_desc
   batch_size: 512
+  field_name_with_submission_title: eval_scenario
+  field_name_with_vid: topic
+  field_name_with_submission_text: eval_whole_desc
 
 # llm-based knowledge extractor
 1_knowledge_extractor:
